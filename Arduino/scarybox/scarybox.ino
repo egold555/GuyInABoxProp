@@ -1,4 +1,5 @@
-#include <Bounce2.h>
+#include "Bounce2.h"
+#include "AudioPlayer.h"
 
 #define PIN_RELAY_REDLIGHT 7
 #define PIN_RELAY_SMOKE 6
@@ -6,6 +7,11 @@
 #define PIN_RELAY_CYLINDER_MAN 5
 
 #define PIN_TRIGGER_BUTTON 8
+
+#define PIN_AUDIO_RX 9
+#define PIN_AUDIO_TX 10
+#define AUDIO_BOOT 1
+#define AUDIO_SCREAM 2
 
 Bounce inputTrigger;
 
@@ -15,12 +21,6 @@ const int SMOKE_OFF_TIME = 30 * 1000;  // SMOKE OFF time
 long int lastTimeSmokeOn;
 long int lastTimeSmokeOff;
 bool smokeOn;
-
-void startAudio()
-{
-  // This sends serial to the Rasp PI to start the audio.
-  Serial.println("test");
-}
 
 void flicker(long millisToRun, int pin, int offMin, int offMax, int onMin, int onMax)
 {
@@ -45,7 +45,7 @@ void runAnimation()
 
   // Seems to take about 450ms for the audio to actually start playing.
   // So this synchronizes the audio with the man going up.
-  startAudio();
+  playAudio(AUDIO_SCREAM);
   delay(450);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
@@ -72,6 +72,7 @@ void runAnimation()
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  setupAudio(PIN_AUDIO_RX, PIN_AUDIO_TX);
 
   pinMode(PIN_TRIGGER_BUTTON, INPUT_PULLUP);
   pinMode(PIN_RELAY_REDLIGHT, OUTPUT);
@@ -94,6 +95,9 @@ void setup() {
   lastTimeSmokeOn = millis();
   lastTimeSmokeOff = lastTimeSmokeOn + SMOKE_ON_TIME;
   smokeOn = true;
+
+  playAudio(AUDIO_BOOT);
+  
 }
 
 
