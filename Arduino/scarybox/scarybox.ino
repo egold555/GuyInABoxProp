@@ -40,13 +40,13 @@ void runAnimation()
 {
   digitalWrite(PIN_RELAY_LID, LOW);
   digitalWrite(PIN_RELAY_SMOKE, LOW);
-  delay(300);
+  delay(700);
 
 
-  // Seems to take about 450ms for the audio to actually start playing.
+  // Seems to take about 50ms for the audio to actually start playing.
   // So this synchronizes the audio with the man going up.
   playAudio(AUDIO_SCREAM);
-  delay(450);
+  delay(50);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
   digitalWrite(PIN_RELAY_REDLIGHT, LOW);
