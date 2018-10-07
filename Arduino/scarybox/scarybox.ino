@@ -12,6 +12,17 @@
 #define PIN_AUDIO_TX 10
 #define AUDIO_BOOT 1
 #define AUDIO_SCREAM 2
+#define AUDIO_CALIBRATIONFAIL 3
+
+
+// Pins for the ultrasonic sensor:
+const int trigPin = 11;
+const int echoPin = 12;
+int ultrasonicThreshold = -1;
+
+// We need to add a timeout for the longes range that the Sensor can sense, so that
+// it does not get stuck waiting for an echo that never comes.
+const long timeout = 400 * 29 * 2; //Timeout in microseconds for a max range of 400 cm
 
 Bounce inputTrigger;
 
@@ -21,6 +32,81 @@ const int SMOKE_OFF_TIME = 30 * 1000;  // SMOKE OFF time
 long int lastTimeSmokeOn;
 long int lastTimeSmokeOff;
 bool smokeOn;
+
+
+int measureDistanceInCm()
+{
+
+  // The sensor is triggered by a HIGH signal for 10 microseconds.
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse and
+  // to reset the sensor if it didn't register an echo from the last ping:
+
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(10); //This delay lets the capacitors empty and resets the sensor
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // The echo pin is used to read the signal from the Sensor: A HIGH pulse
+  // whose duration is the time (in microseconds) from the sending of the ping
+  // to the reception of its echo off of an object.
+
+  long duration = pulseIn(echoPin, HIGH, timeout);
+
+
+  // The speed of sound is 343 m/s or 29 microseconds per centimeter.
+  // The ping travels out and back, so to find the distance of the object we
+  // take half of the distance travelled.
+  return (int) (duration / (29 * 2));
+}
+
+// Calibrate the distance, return true if successful, false if not.
+// If success, sets threshold variable. Delta is the difference allowed in the distance
+// (should be around 20 cm or so).
+bool setupAndCalibrateUltrasonic(int delta)
+{
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  int minDist = 8000;
+  for (int i = 0; i < 6; ++i) {
+    int dist = measureDistanceInCm();
+    if (dist > 0 && dist < minDist) {
+      minDist = dist;
+    }
+    delay(150);
+  }
+  if (minDist >= 1000 || minDist <= delta) {
+    return false;
+  }
+
+  for (int i = 0; i < 15; ++i) {
+    int dist = measureDistanceInCm();
+
+    if (dist > 0) {
+      if (dist > minDist + delta || dist <= minDist - delta) {
+        return false;
+      }
+    }
+    delay(150);
+  }
+
+  ultrasonicThreshold = minDist - delta;
+  return true;
+}
+
+// Returns true if the ultrasonic sensor is triggered.
+bool isUltrasonicTriggered()
+{
+  int dist = measureDistanceInCm();
+  Serial.println(dist);
+  if (dist > 0 && dist < ultrasonicThreshold) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
 
 void flicker(long millisToRun, int pin, int offMin, int offMax, int onMin, int onMax)
 {
@@ -91,13 +177,18 @@ void setup() {
   randomSeed(analogRead(0) + 37 * analogRead(1));
 
   // start with smoke on
-  digitalWrite(PIN_RELAY_SMOKE, LOW);  
+  digitalWrite(PIN_RELAY_SMOKE, LOW);
   lastTimeSmokeOn = millis();
   lastTimeSmokeOff = lastTimeSmokeOn + SMOKE_ON_TIME;
   smokeOn = true;
 
-  playAudio(AUDIO_BOOT);
-  
+  bool success = setupAndCalibrateUltrasonic(15);
+  if (!success) {
+    playAudio(AUDIO_CALIBRATIONFAIL);
+  }
+  else {
+    playAudio(AUDIO_BOOT);
+  }
 }
 
 
@@ -105,8 +196,10 @@ void loop() {
   // put your main code here, to run repeatedly:
   inputTrigger.update();
 
-  if (inputTrigger.fell()) {
-    // The button is pressed.
+  delay(100);  // delay for ultrasonic.
+  if (/*inputTrigger.fell() || */ isUltrasonicTriggered()) {
+    // The button is pressed or the ultrasonic is triggered.
+    Serial.println("Triggering!");
     runAnimation();
   }
 
