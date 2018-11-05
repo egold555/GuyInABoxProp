@@ -13,7 +13,17 @@
 #define AUDIO_BOOT 1
 #define AUDIO_SCREAM 2
 #define AUDIO_CALIBRATIONFAIL 3
+#define AUDIO_TRUMP_1 4
+#define AUDIO_TRUMP_2 5
+#define AUDIO_TRUMP_3 6
+#define AUDIO_TRUMP_4 7
+#define AUDIO_TRUMP_5 8
+#define AUDIO_TRUMP_6 9
 
+// Defines which audio files are used for the screen/trump sound.
+const int NUMBER_OF_SCREAMS = /*1*/ 6;
+int screamFiles[] = { /*AUDIO_SCREAM,*/ AUDIO_TRUMP_1, AUDIO_TRUMP_2, AUDIO_TRUMP_3, AUDIO_TRUMP_4, AUDIO_TRUMP_5, AUDIO_TRUMP_6  };
+unsigned long screamLength[] = { /*3000,*/ 7000, 7000, 7000, 7000, 7000, 7000 };
 
 // Pins for the ultrasonic sensor:
 const int trigPin = 11;
@@ -27,15 +37,17 @@ const long timeout = 400 * 29 * 2; //Timeout in microseconds for a max range of 
 Bounce inputTrigger;
 
 const int SMOKE_ON_TIME = 10 * 1000;  // SMOKE ON time after start
-const int SMOKE_OFF_TIME = 30 * 1000;  // SMOKE OFF time
+const int SMOKE_OFF_TIME = /* 30 */ 60 * 1000;  // SMOKE OFF time
 
-const int RESET_DELAY_SECONDS = 15; // time before box will trigger again.
+const int RESET_DELAY_SECONDS = 10; // time before box will trigger again.
 
 long int lastTimeSmokeOn;
 long int lastTimeSmokeOff;
 bool smokeOn;
 
 long nextTriggerTimePossible = 0;
+
+int currentScreamNumber = 0;
 
 int measureDistanceInCm()
 {
@@ -132,6 +144,14 @@ void flicker(long millisToRun, int pin, int offMin, int offMax, int onMin, int o
 // LOW for a relay means ON, HIGH is OFF
 void runAnimation()
 {
+  // Rotate throught the scream files.
+  int audioFileNumber = screamFiles[currentScreamNumber];
+  long audioDelay = screamLength[currentScreamNumber];
+  ++currentScreamNumber;
+  if (currentScreamNumber >= NUMBER_OF_SCREAMS) {
+    currentScreamNumber = 0;
+  }
+  
   digitalWrite(PIN_RELAY_LID, LOW);
   digitalWrite(PIN_RELAY_SMOKE, LOW);
   delay(700);
@@ -139,14 +159,14 @@ void runAnimation()
 
   // Seems to take about 50ms for the audio to actually start playing.
   // So this synchronizes the audio with the man going up.
-  playAudio(AUDIO_SCREAM);
+  playAudio(audioFileNumber);
   delay(50);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
   digitalWrite(PIN_RELAY_REDLIGHT, LOW);
-  delay(1000);
 
-  delay(2000);
+  delay(audioDelay);
+  
   //flicker(2000, PIN_RELAY_REDLIGHT, 20, 80, 40, 120);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
