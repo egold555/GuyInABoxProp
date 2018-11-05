@@ -29,10 +29,13 @@ Bounce inputTrigger;
 const int SMOKE_ON_TIME = 10 * 1000;  // SMOKE ON time after start
 const int SMOKE_OFF_TIME = 30 * 1000;  // SMOKE OFF time
 
+const int RESET_DELAY_SECONDS = 15; // time before box will trigger again.
+
 long int lastTimeSmokeOn;
 long int lastTimeSmokeOff;
 bool smokeOn;
 
+long nextTriggerTimePossible = 0;
 
 int measureDistanceInCm()
 {
@@ -71,20 +74,25 @@ bool setupAndCalibrateUltrasonic(int delta)
   int minDist = 8000;
   for (int i = 0; i < 6; ++i) {
     int dist = measureDistanceInCm();
+    Serial.print("Calibrate: ");
+    Serial.println(dist);
     if (dist > 0 && dist < minDist) {
       minDist = dist;
     }
     delay(150);
   }
   if (minDist >= 1000 || minDist <= delta) {
+    Serial.println("Calibration failed.");
     return false;
   }
 
   for (int i = 0; i < 15; ++i) {
     int dist = measureDistanceInCm();
-
+    Serial.print("Check: ");
+    Serial.println(dist);
     if (dist > 0) {
       if (dist > minDist + delta || dist <= minDist - delta) {
+        Serial.println("Check failed.");
         return false;
       }
     }
@@ -197,10 +205,17 @@ void loop() {
   inputTrigger.update();
 
   delay(100);  // delay for ultrasonic.
+
   if (/*inputTrigger.fell() || */ isUltrasonicTriggered()) {
     // The button is pressed or the ultrasonic is triggered.
     Serial.println("Triggering!");
-    runAnimation();
+    if (millis() >= nextTriggerTimePossible) {
+      runAnimation();
+      nextTriggerTimePossible = millis() + 1000 * RESET_DELAY_SECONDS;
+    }
+    else {
+      Serial.println("Trigger suppressed due to timeout");
+    }
   }
 
   long currentTime = millis();
