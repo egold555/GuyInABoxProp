@@ -23,7 +23,10 @@
 // Defines which audio files are used for the screen/trump sound.
 const int NUMBER_OF_SCREAMS = /*1*/ 6;
 int screamFiles[] = { /*AUDIO_SCREAM,*/ AUDIO_TRUMP_1, AUDIO_TRUMP_2, AUDIO_TRUMP_3, AUDIO_TRUMP_4, AUDIO_TRUMP_5, AUDIO_TRUMP_6  };
-unsigned long screamLength[] = { /*3000,*/ 7000, 7000, 7000, 7000, 7000, 7000 };
+unsigned long screamLength[] = { /*3000,*/ 2000, 2500, 3300, 3650, 2850, 7300 };
+unsigned long beforeScreamDelay = /*0*/ 1000;
+unsigned long afterScreamDelay = /*0*/ 2500;
+
 
 // Pins for the ultrasonic sensor:
 const int trigPin = 11;
@@ -159,13 +162,17 @@ void runAnimation()
 
   // Seems to take about 50ms for the audio to actually start playing.
   // So this synchronizes the audio with the man going up.
-  playAudio(audioFileNumber);
+
   delay(50);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
   digitalWrite(PIN_RELAY_REDLIGHT, LOW);
-
+  
+  delay(beforeScreamDelay);
+  playAudio(audioFileNumber);
+  
   delay(audioDelay);
+  delay(afterScreamDelay);
   
   //flicker(2000, PIN_RELAY_REDLIGHT, 20, 80, 40, 120);
 
