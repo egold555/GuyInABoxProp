@@ -21,11 +21,11 @@
 #define AUDIO_TRUMP_6 9
 
 // Defines which audio files are used for the screen/trump sound.
-const int NUMBER_OF_SCREAMS = /*1*/ 6;
-int screamFiles[] = { /*AUDIO_SCREAM,*/ AUDIO_TRUMP_1, AUDIO_TRUMP_2, AUDIO_TRUMP_3, AUDIO_TRUMP_4, AUDIO_TRUMP_5, AUDIO_TRUMP_6  };
-unsigned long screamLength[] = { /*3000,*/ 2000, 2500, 3300, 3650, 2850, 7300 };
-unsigned long beforeScreamDelay = /*0*/ 1000;
-unsigned long afterScreamDelay = /*0*/ 2500;
+const int NUMBER_OF_SCREAMS = 1 /* 6 */;
+int screamFiles[] = { AUDIO_SCREAM /*, AUDIO_TRUMP_1, AUDIO_TRUMP_2, AUDIO_TRUMP_3, AUDIO_TRUMP_4, AUDIO_TRUMP_5, AUDIO_TRUMP_6 */  };
+unsigned long screamLength[] = { 3000 /*, 2000, 2500, 3300, 3650, 2850, 7300 */};
+unsigned long beforeScreamDelay = 0 /* 1000 */;
+unsigned long afterScreamDelay = 0 /* 2500 */;
 
 
 // Pins for the ultrasonic sensor:
