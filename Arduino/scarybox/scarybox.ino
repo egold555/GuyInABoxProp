@@ -1,6 +1,9 @@
 #include "Bounce2.h"
 #include "AudioPlayer.h"
 
+// Uncomment this line to use the ultrasonic sensor.
+//#define USE_ULTRASONIC
+
 #define PIN_RELAY_REDLIGHT 7
 #define PIN_RELAY_SMOKE 6
 #define PIN_RELAY_LID 4
@@ -42,7 +45,11 @@ Bounce inputTrigger;
 const int SMOKE_ON_TIME = 10 * 1000;  // SMOKE ON time after start
 const int SMOKE_OFF_TIME = /* 30 */ 60 * 1000;  // SMOKE OFF time
 
+#ifdef USE_ULTRASONIC
 const int RESET_DELAY_SECONDS = 10; // time before box will trigger again.
+#else
+const int RESET_DELAY_SECONDS = 2; // time before box will trigger again.
+#endif
 
 long int lastTimeSmokeOn;
 long int lastTimeSmokeOff;
@@ -217,7 +224,12 @@ void setup() {
   lastTimeSmokeOff = lastTimeSmokeOn + SMOKE_ON_TIME;
   smokeOn = true;
 
+#ifdef USE_ULTRASONIC
   bool success = setupAndCalibrateUltrasonic(15);
+#else
+  bool success = true;
+#endif
+
   if (!success) {
     playAudio(AUDIO_CALIBRATIONFAIL);
   }
@@ -228,12 +240,20 @@ void setup() {
 
 
 void loop() {
+  bool triggered;
+  
   // put your main code here, to run repeatedly:
   inputTrigger.update();
 
   delay(100);  // delay for ultrasonic.
 
-  if (/*inputTrigger.fell() || */ isUltrasonicTriggered()) {
+#ifdef USE_ULTRASONIC
+  triggered = isUltrasonicTriggered();
+#else
+  triggered = inputTrigger.fell();
+#endif
+
+  if (triggered) {
     // The button is pressed or the ultrasonic is triggered.
     Serial.println("Triggering!");
     if (millis() >= nextTriggerTimePossible) {
