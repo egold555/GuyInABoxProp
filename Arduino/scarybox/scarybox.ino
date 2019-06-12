@@ -1,5 +1,6 @@
 #include "Bounce2.h"
 #include "AudioPlayer.h"
+#include <SoftwareSerial.h>
 
 // Uncomment this line to use the ultrasonic sensor.
 //#define USE_ULTRASONIC
@@ -22,6 +23,12 @@
 #define AUDIO_TRUMP_4 7
 #define AUDIO_TRUMP_5 8
 #define AUDIO_TRUMP_6 9
+
+//Blue Wire
+#define LIGHT_TX 2
+
+//Orange Wire
+#define LIGHT_RX 3
 
 // Defines which audio files are used for the screen/trump sound.
 const int NUMBER_OF_SCREAMS = 1 /* 6 */;
@@ -58,6 +65,8 @@ bool smokeOn;
 long nextTriggerTimePossible = 0;
 
 int currentScreamNumber = 0;
+
+SoftwareSerial lightSerial(LIGHT_RX, LIGHT_TX);
 
 int measureDistanceInCm()
 {
@@ -197,10 +206,17 @@ void runAnimation()
   }
 }
 
+void changeColor(int red, int green, int blue){
+  lightSerial.print(String(red) + String(F(",")) + String(green) + String(F(",")) + String(blue) + String(F("\n")));
+  
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   setupAudio(PIN_AUDIO_RX, PIN_AUDIO_TX);
+  lightSerial.begin(9600);
+  
 
   pinMode(PIN_TRIGGER_BUTTON, INPUT_PULLUP);
   pinMode(PIN_RELAY_REDLIGHT, OUTPUT);
@@ -235,7 +251,19 @@ void setup() {
   }
   else {
     playAudio(AUDIO_BOOT);
+    
   }
+  changeColor(255,0,0);
+  //lightSerial.print("255,0,0\n");
+  delay(500);
+  changeColor(0,255,0);
+  //lightSerial.print("0,255,0\n");
+  delay(500);
+  changeColor(0,0,255);
+  //lightSerial.print("0,0,255\n");
+  delay(500);
+  changeColor(0,0,0);
+  //lightSerial.print("0,0,0\n");
 }
 
 
