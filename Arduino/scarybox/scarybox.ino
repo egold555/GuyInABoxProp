@@ -5,7 +5,7 @@
 // Uncomment this line to use the ultrasonic sensor.
 //#define USE_ULTRASONIC
 
-#define PIN_RELAY_REDLIGHT 7
+//#define PIN_RELAY_REDLIGHT 7
 #define PIN_RELAY_SMOKE 6
 #define PIN_RELAY_LID 4
 #define PIN_RELAY_CYLINDER_MAN 5
@@ -151,9 +151,11 @@ void flicker(long millisToRun, int pin, int offMin, int offMax, int onMin, int o
 {
   long startMillis = millis();
   while (millis() < startMillis + millisToRun) {
-    digitalWrite(PIN_RELAY_REDLIGHT, LOW);
+    //digitalWrite(PIN_RELAY_REDLIGHT, LOW);
+    changeColor(255,0,0);
     delay(random(offMin, offMax));
-    digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
+    //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
+    changeColor(0,0,0);
     delay(random(onMin, onMax));
   }
 }
@@ -182,7 +184,8 @@ void runAnimation()
   delay(50);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
-  digitalWrite(PIN_RELAY_REDLIGHT, LOW);
+  //digitalWrite(PIN_RELAY_REDLIGHT, LOW);
+  changeColor(255,0,0);
   
   delay(beforeScreamDelay);
   playAudio(audioFileNumber);
@@ -198,7 +201,8 @@ void runAnimation()
   delay(500);
   digitalWrite(PIN_RELAY_LID, HIGH);
   delay(2000);
-  digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
+  //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
+  changeColor(0,0,0);
 
   if (!smokeOn) {
     // turn smoke off, unless it should stay on.
@@ -208,7 +212,6 @@ void runAnimation()
 
 void changeColor(int red, int green, int blue){
   lightSerial.print(String(red) + String(F(",")) + String(green) + String(F(",")) + String(blue) + String(F("\n")));
-  
 }
 
 void setup() {
@@ -219,13 +222,13 @@ void setup() {
   
 
   pinMode(PIN_TRIGGER_BUTTON, INPUT_PULLUP);
-  pinMode(PIN_RELAY_REDLIGHT, OUTPUT);
+  //pinMode(PIN_RELAY_REDLIGHT, OUTPUT);
   pinMode(PIN_RELAY_SMOKE, OUTPUT);
   pinMode(PIN_RELAY_LID, OUTPUT);
   pinMode(PIN_RELAY_CYLINDER_MAN, OUTPUT);
 
   // Turn relays OFF (HIGH)
-  digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
+  //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
   digitalWrite(PIN_RELAY_SMOKE, HIGH);
   digitalWrite(PIN_RELAY_LID, HIGH);
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
