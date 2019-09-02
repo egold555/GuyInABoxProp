@@ -147,18 +147,59 @@ bool isUltrasonicTriggered()
   }
 }
 
-void flicker(long millisToRun, int pin, int offMin, int offMax, int onMin, int onMax)
+bool isFlickering = false;  // true means light is currently flicker red/white
+bool isFlickerRed = false;  // true means light is currently in red part of red/white flicker
+const int millisFlicker = 60; // milliseconds of each flicker
+long lastFlickerStart; // time last flicker started.
+
+// Begin flickering the light
+void startFlicker()
 {
-  long startMillis = millis();
-  while (millis() < startMillis + millisToRun) {
-    //digitalWrite(PIN_RELAY_REDLIGHT, LOW);
-    changeColor(255,0,0);
-    delay(random(offMin, offMax));
-    //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
-    changeColor(0,0,0);
-    delay(random(onMin, onMax));
+  isFlickering = true;
+  isFlickerRed = true;
+  lastFlickerStart = millis();
+  changeColor(255, 0, 0);
+}
+
+// Stop flickering the light
+void endFlicker()
+{
+  isFlickering = false;
+  changeColor(0, 0, 0);
+}
+
+// Update the flickering.
+void updateFlicker()
+{
+  if (isFlickering) {
+    long currentMillis = millis();
+    if (currentMillis > lastFlickerStart + millisFlicker) {
+      lastFlickerStart = currentMillis;
+      isFlickerRed = !isFlickerRed;
+      if (isFlickerRed) {
+        changeColor(255, 0, 0);
+      }
+      else {
+        changeColor(255, 200, 160);
+      }
+    }
   }
 }
+
+// Like delay, but runs background tasks also.
+// Always use this instead of delay.
+void delayAndRunBg(int millisToDelay)
+{
+  long endMillis = millis() + millisToDelay;
+  while (millis() < endMillis) {
+    updateFlicker();
+    // add other background tasks here.
+    delay(1);
+  }
+}
+
+
+
 
 // This is the animation that runs when the button is pressed.
 // Used delay statements to get the timing right.
@@ -172,37 +213,37 @@ void runAnimation()
   if (currentScreamNumber >= NUMBER_OF_SCREAMS) {
     currentScreamNumber = 0;
   }
-  
+
   digitalWrite(PIN_RELAY_LID, LOW);
   digitalWrite(PIN_RELAY_SMOKE, LOW);
-  delay(700);
+  delayAndRunBg(700);
 
 
   // Seems to take about 50ms for the audio to actually start playing.
   // So this synchronizes the audio with the man going up.
 
-  delay(50);
+  delayAndRunBg(50);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, LOW);
   //digitalWrite(PIN_RELAY_REDLIGHT, LOW);
-  changeColor(255,0,0);
-  
-  delay(beforeScreamDelay);
+  startFlicker();
+
+  delayAndRunBg(beforeScreamDelay);
   playAudio(audioFileNumber);
-  
-  delay(audioDelay);
-  delay(afterScreamDelay);
-  
+
+  delayAndRunBg(audioDelay);
+  delayAndRunBg(afterScreamDelay);
+
   //flicker(2000, PIN_RELAY_REDLIGHT, 20, 80, 40, 120);
 
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
 
 
-  delay(500);
+  delayAndRunBg(500);
   digitalWrite(PIN_RELAY_LID, HIGH);
-  delay(2000);
+  delayAndRunBg(2000);
   //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
-  changeColor(0,0,0);
+  endFlicker();
 
   if (!smokeOn) {
     // turn smoke off, unless it should stay on.
@@ -210,7 +251,7 @@ void runAnimation()
   }
 }
 
-void changeColor(int red, int green, int blue){
+void changeColor(int red, int green, int blue) {
   lightSerial.print(String(red) + String(F(",")) + String(green) + String(F(",")) + String(blue) + String(F("\n")));
 }
 
@@ -219,7 +260,7 @@ void setup() {
   Serial.begin(9600);
   setupAudio(PIN_AUDIO_RX, PIN_AUDIO_TX);
   lightSerial.begin(9600);
-  
+
 
   pinMode(PIN_TRIGGER_BUTTON, INPUT_PULLUP);
   //pinMode(PIN_RELAY_REDLIGHT, OUTPUT);
@@ -254,29 +295,29 @@ void setup() {
   }
   else {
     playAudio(AUDIO_BOOT);
-    
+
   }
-  changeColor(255,0,0);
+  changeColor(255, 0, 0);
   //lightSerial.print("255,0,0\n");
-  delay(500);
-  changeColor(0,255,0);
+  delayAndRunBg(500);
+  changeColor(0, 255, 0);
   //lightSerial.print("0,255,0\n");
-  delay(500);
-  changeColor(0,0,255);
+  delayAndRunBg(500);
+  changeColor(0, 0, 255);
   //lightSerial.print("0,0,255\n");
-  delay(500);
-  changeColor(0,0,0);
+  delayAndRunBg(500);
+  changeColor(0, 0, 0);
   //lightSerial.print("0,0,0\n");
 }
 
 
 void loop() {
   bool triggered;
-  
+
   // put your main code here, to run repeatedly:
   inputTrigger.update();
 
-  delay(100);  // delay for ultrasonic.
+  delayAndRunBg(100);  // delay for ultrasonic.
 
 #ifdef USE_ULTRASONIC
   triggered = isUltrasonicTriggered();
