@@ -3,7 +3,7 @@
 #include <SoftwareSerial.h>
 
 // Uncomment this line to use the ultrasonic sensor.
-//#define USE_ULTRASONIC
+#define USE_ULTRASONIC
 
 //#define PIN_RELAY_REDLIGHT 7
 #define PIN_RELAY_SMOKE 6
@@ -49,8 +49,8 @@ const long timeout = 400 * 29 * 2; //Timeout in microseconds for a max range of 
 
 Bounce inputTrigger;
 
-const int SMOKE_ON_TIME = 10 * 1000;  // SMOKE ON time after start
-const int SMOKE_OFF_TIME = /* 30 */ 60 * 1000;  // SMOKE OFF time
+const long SMOKE_ON_TIME = /*10*/10 * 1000L;  // SMOKE ON time after start
+const long SMOKE_OFF_TIME = /* 60 */ 60 * 1000L;  // SMOKE OFF time
 
 #ifdef USE_ULTRASONIC
 const int RESET_DELAY_SECONDS = 10; // time before box will trigger again.
@@ -58,8 +58,8 @@ const int RESET_DELAY_SECONDS = 10; // time before box will trigger again.
 const int RESET_DELAY_SECONDS = 2; // time before box will trigger again.
 #endif
 
-long int lastTimeSmokeOn;
-long int lastTimeSmokeOff;
+long lastTimeSmokeOn;
+long lastTimeSmokeOff;
 bool smokeOn;
 
 long nextTriggerTimePossible = 0;
@@ -239,7 +239,7 @@ void runAnimation()
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
 
 
-  delayAndRunBg(500);
+  delayAndRunBg(800);
   digitalWrite(PIN_RELAY_LID, HIGH);
   delayAndRunBg(2000);
   //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
@@ -270,7 +270,7 @@ void setup() {
 
   // Turn relays OFF (HIGH)
   //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
-  digitalWrite(PIN_RELAY_SMOKE, HIGH);
+  digitalWrite(PIN_RELAY_SMOKE, LOW);
   digitalWrite(PIN_RELAY_LID, HIGH);
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
 
@@ -340,12 +340,14 @@ void loop() {
   long currentTime = millis();
   if (smokeOn && currentTime > lastTimeSmokeOn + SMOKE_ON_TIME) {
     // turn smoke off.
+    Serial.println("Smoke on");
     digitalWrite(PIN_RELAY_SMOKE, HIGH);
     smokeOn = false;
     lastTimeSmokeOff = currentTime;
   }
   if (!smokeOn && currentTime > lastTimeSmokeOff + SMOKE_OFF_TIME) {
     // turn smoke on.
+    Serial.println("Smoke off");
     digitalWrite(PIN_RELAY_SMOKE, LOW);
     smokeOn = true;
     lastTimeSmokeOn = currentTime;
