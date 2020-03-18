@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "scarybox.ino",
+    "port": "COM5",
+    "programmer": "AVRISP mkII"
+}
