@@ -3,7 +3,7 @@
 #include <SoftwareSerial.h>
 
 // Uncomment this line to use the ultrasonic sensor.
-#define USE_ULTRASONIC
+//#define USE_ULTRASONIC
 
 //#define PIN_RELAY_REDLIGHT 7
 #define PIN_RELAY_SMOKE 6
@@ -15,7 +15,8 @@
 #define PIN_AUDIO_RX 9
 #define PIN_AUDIO_TX 10
 #define AUDIO_BOOT 1
-#define AUDIO_SCREAM 2
+//#define AUDIO_SCREAM 2
+#define AUDIO_SCREAM 10
 #define AUDIO_CALIBRATIONFAIL 3
 #define AUDIO_TRUMP_1 4
 #define AUDIO_TRUMP_2 5
@@ -180,7 +181,8 @@ void updateFlicker()
         changeColor(255, 0, 0);
       }
       else {
-        changeColor(255, 200, 160);
+        //changeColor(255, 200, 160);
+        changeColor(0, 0, 128);
       }
     }
   }
@@ -239,7 +241,7 @@ void runAnimation()
   digitalWrite(PIN_RELAY_CYLINDER_MAN, HIGH);
 
 
-  delayAndRunBg(800);
+  delayAndRunBg(900);
   digitalWrite(PIN_RELAY_LID, HIGH);
   delayAndRunBg(2000);
   //digitalWrite(PIN_RELAY_REDLIGHT, HIGH);
